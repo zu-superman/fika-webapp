@@ -14,6 +14,12 @@ const routes = [
     component: Login,
     meta: { requiresAuth: false },
   },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/error/404.vue'),
+    meta: { requiresAuth: false },
+  }
 ]
 
 const router = createRouter({
