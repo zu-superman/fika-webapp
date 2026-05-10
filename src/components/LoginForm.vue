@@ -28,7 +28,7 @@
             v-model="form.password"
             type="password"
             placeholder="请输入密码"
-clearable
+            clearable
             show-password
             prefix-icon="Lock"
           />
@@ -45,7 +45,7 @@ clearable
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" :loading="loading" size="medium" style="width:100%" @click="onSubmit">
+          <el-button type="primary" :loading="loading" :disabled="btnDisabled" size="default" style="width:100%" @click="onSubmit">
             登录
           </el-button>
         </el-form-item>
@@ -68,7 +68,9 @@ const form = ref({
   password: '',
   remember: true,
 })
+const btnDisabled = ref(false) // 登录按钮是否禁用
 const loading = ref(false)
+const cfCaptchaToken = ref('') // Cloudflare Turnstile 验证结果token
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
@@ -86,6 +88,7 @@ const onSubmit = () => {
       await authStore.loginAction({
         username: form.value.username,
         password: form.value.password,
+        captchaToken: cfCaptchaToken.value
       })
       ElMessage({
         message: '登录成功！',
@@ -123,6 +126,7 @@ function loadTurnstile() {
       size: 'flexible'
     })
   }
+  btnDisabled.value = true
 }
 window.turnstileCallback = function (token) {
   console.log("turnstileCallback", token);
