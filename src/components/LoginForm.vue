@@ -56,11 +56,11 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { userAuthStore } from '@/store/auth'
 
-const store = useStore()
+const authStore = userAuthStore()
 const router = useRouter()
 const formRef = ref(null)
 const form = ref({
@@ -83,14 +83,17 @@ const onSubmit = () => {
     if (!valid) return
     loading.value = true
     try {
-      // await store.dispatch('auth/login', {
-      //   username: form.value.username,
-      //   password: form.value.password,
-      // })
-      ElMessage.error('登录失败')
+      await authStore.loginAction({
+        username: form.value.username,
+        password: form.value.password,
+      })
+      ElMessage({
+        message: '登录成功！',
+        type: 'success',
+      })
       // router.push('/dashboard').catch(() => {})
     } catch (err) {
-      ElMessage.error((err && err.message) ? err.message : '登录失败，请检查凭据')
+      console.error('登录失败', err)
     } finally {
       loading.value = false
     }
@@ -112,7 +115,6 @@ function loadTurnstile() {
   script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
   script.async = true
   script.defer = true
-  // debugger
 
   document.head.appendChild(script)
 
@@ -141,11 +143,9 @@ window.turnstileExpiredCallback = function () {
 
 <style scoped>
 .login-wrap {
-  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
   background: linear-gradient(180deg, #f6f8fb, #eef3fb);
 }
 
