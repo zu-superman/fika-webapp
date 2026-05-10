@@ -5,10 +5,16 @@ import { createPinia } from 'pinia'
 import './styles/index.css'
 // 保证 Element Plus 样式被加载（必须）
 import 'element-plus/dist/index.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 const pinia = createPinia()
 
-createApp(App)
+const app = createApp(App)
   .use(router)
   .use(pinia)
-  .mount('#app')
+
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
+
+app.mount('#app')

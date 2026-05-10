@@ -14,22 +14,23 @@
         class="login-form"
         @submit.native.prevent
       >
-        <el-form-item prop="username">
+        <el-form-item prop="username" size="default">
           <el-input
             v-model="form.username"
             placeholder="手机号 / 用户名 / 邮箱"
             clearable
-            prefix-icon="el-icon-user"
+            prefix-icon="User"
           />
         </el-form-item>
 
-        <el-form-item prop="password">
+        <el-form-item prop="password" size="default">
           <el-input
             v-model="form.password"
             type="password"
             placeholder="请输入密码"
+clearable
             show-password
-            prefix-icon="el-icon-lock"
+            prefix-icon="Lock"
           />
         </el-form-item>
 
@@ -40,7 +41,6 @@
         <el-form-item>
           <div class="row-between">
             <el-checkbox v-model="form.remember">记住我</el-checkbox>
-            <a class="forgot" href="#" @click.prevent="onForgot">忘记密码？</a>
           </div>
         </el-form-item>
 
@@ -98,10 +98,6 @@ const onSubmit = () => {
       loading.value = false
     }
   })
-}
-
-const onForgot = () => {
-  ElMessage.info('请联系管理员重置密码。')
 }
 
 onMounted(() => {
