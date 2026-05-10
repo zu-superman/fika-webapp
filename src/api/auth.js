@@ -1,20 +1,25 @@
-import axios from 'axios';
+import request from '@/utils/requests'
 
-const API_URL = 'https://your-api-url.com/api'; // Replace with your actual API URL
+export function login(user) {
+  return request({
+    url: '/login',
+    headers: {
+      isToken: false,
+      repeatSubmit: false
+    },
+    method: 'post',
+    data: user
+  })
+}
 
-export const login = async (credentials) => {
-  try {
-    const response = await axios.post(`${API_URL}/login`, credentials);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response.data.message || 'Login failed');
-  }
-};
+export function logout() {
+  return request({
+    url: '/logout',
+    method: 'post'
+  })
+}
 
-export const logout = async () => {
-  try {
-    await axios.post(`${API_URL}/logout`);
-  } catch (error) {
-    throw new Error(error.response.data.message || 'Logout failed');
-  }
-};
+export default {
+  login,
+  logout
+}
