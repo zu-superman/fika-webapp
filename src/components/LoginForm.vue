@@ -128,7 +128,7 @@ function loadTurnstile() {
 
   script.onload = () => {
     cfTurnstileWidgetId.value = turnstile.render('#cf-turnstile', {
-      sitekey: '0x4AAAAAABmZuLg8px1uBqfP',
+      sitekey: import.meta.env.VITE_APP_TURNSTILE_SITE_KEY,
       "retry-interval": 30000,
       callback: turnstileCallback,
       "expired-callback": turnstileExpiredCallback,
@@ -137,9 +137,7 @@ function loadTurnstile() {
   }
   btnDisabled.value = true
 }
-window.turnstileCallback = function (token) {
-  console.log("turnstileCallback", token);
-  
+window.turnstileCallback = function (token) {  
   btnDisabled.value = false
   cfCaptchaToken.value = token
 }
