@@ -12,7 +12,7 @@
         ref="formRef"
         label-position="top"
         class="login-form"
-        @submit.native.prevent
+        @submit.prevent
       >
         <el-form-item prop="username" size="default">
           <el-input
@@ -59,15 +59,17 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { userAuthStore } from '@/store/auth'
+import cache from '@/utils/cache'
 
 const authStore = userAuthStore()
 const router = useRouter()
 const formRef = ref(null)
 const form = ref({
-  username: '',
+  username: cache.local.get(lastLoginCacheKey) || '',
   password: '',
   remember: true,
 })
+const lastLoginCacheKey = 'auth.lastLogin'
 const btnDisabled = ref(false) // 登录按钮是否禁用
 const loading = ref(false)
 const cfCaptchaToken = ref('') // Cloudflare Turnstile 验证结果token
@@ -84,6 +86,13 @@ const onSubmit = () => {
   formRef.value.validate(async (valid) => {
     if (!valid) return
     loading.value = true
+
+    if (form.value.remember) {
+      cache.local.set(lastLoginCacheKey, form.value.username)
+    } else {
+      cache.local.remove(lastLoginCacheKey)
+    }
+
     try {
       await authStore.loginAction({
         username: form.value.username,
