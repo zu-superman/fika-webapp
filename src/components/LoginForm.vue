@@ -184,6 +184,10 @@ window.turnstileExpiredCallback = function () {
   font-weight: 700;
   font-size: 20px;
   box-shadow: 0 6px 18px rgba(51, 102, 255, 0.12);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .header h2 {
