@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { login, logout } from '@/api/auth'
+import { setToken, removeToken } from '@/utils/common-util'
 
 export const userAuthStore = defineStore('auth', {
   state: () => ({
@@ -12,6 +13,7 @@ export const userAuthStore = defineStore('auth', {
         const user = await login(credentials)
         this.isAuthenticated = true
         this.user = user
+        setToken(user?.token)
       } catch (error) {
         console.error('Login failed:', error)
         throw error
@@ -21,6 +23,7 @@ export const userAuthStore = defineStore('auth', {
       await logout()
       this.isAuthenticated = false
       this.user = null
+      removeToken()
     },
   },
 })

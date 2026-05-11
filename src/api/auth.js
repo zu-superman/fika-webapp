@@ -2,7 +2,7 @@ import request from '@/utils/requests'
 
 export function login(user) {
   return request({
-    url: '/login',
+    url: '/auth/login',
     headers: {
       isToken: false,
       repeatSubmit: false
