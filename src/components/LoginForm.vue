@@ -103,9 +103,15 @@ const onSubmit = () => {
         message: '登录成功！',
         type: 'success',
       })
+      
+      // 跳转路由前移除turnstile组件
+      removeTurnstile()
+
       // router.push('/dashboard').catch(() => {})
     } catch (err) {
       console.error('登录失败', err)
+      btnDisabled.value = true
+      turnstile.reset(cfTurnstileWidgetId.value);
     } finally {
       loading.value = false
     }
@@ -137,6 +143,11 @@ function loadTurnstile() {
   }
   btnDisabled.value = true
 }
+
+function removeTurnstile() {
+  turnstile.remove(cfTurnstileWidgetId.value)
+}
+
 window.turnstileCallback = function (token) {  
   btnDisabled.value = false
   cfCaptchaToken.value = token
