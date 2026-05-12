@@ -87,13 +87,13 @@ const onSubmit = () => {
     if (!valid) return
     loading.value = true
 
-    if (form.value.remember) {
-      cache.local.set(lastLoginCacheKey, form.value.username)
-    } else {
-      cache.local.remove(lastLoginCacheKey)
-    }
-
     try {
+
+      if (form.value.remember) {
+        cache.local.set(lastLoginCacheKey, form.value.username)
+      } else {
+        cache.local.remove(lastLoginCacheKey)
+      }
       await authStore.loginAction({
         username: form.value.username,
         password: form.value.password,
