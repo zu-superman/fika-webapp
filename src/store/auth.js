@@ -10,7 +10,8 @@ export const userAuthStore = defineStore('auth', {
   actions: {
     async loginAction(credentials) {
       try {
-        const user = await login(credentials)
+        const loginRes = await login(credentials)
+        const user = loginRes.data
         this.isAuthenticated = true
         this.user = user
         setToken(user?.token)
