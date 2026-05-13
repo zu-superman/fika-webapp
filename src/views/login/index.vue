@@ -41,32 +41,32 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { userAuthStore } from '@/store/auth'
 import cache from '@/utils/cache'
 
+const route = useRoute()
 const title = ref(import.meta.env.VITE_APP_TITLE)
 const authStore = userAuthStore()
 const router = useRouter()
 const formRef = ref(null)
+const lastLoginCacheKey = 'auth.lastLogin'
 const form = ref({
   username: cache.local.get(lastLoginCacheKey) || '',
   password: '',
   remember: true,
 })
-const lastLoginCacheKey = 'auth.lastLogin'
-const btnDisabled = ref(false) // 登录按钮是否禁用
+const btnDisabled = ref(false)
 const loading = ref(false)
-const cfCaptchaToken = ref('') // Cloudflare Turnstile 验证结果token
+const cfCaptchaToken = ref('')
+const cfTurnstileWidgetId = ref()
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
-
-const cfTurnstileWidgetId = ref() // cf-turnstile组件的id
 
 const onSubmit = () => {
   if (!formRef.value) return
@@ -75,7 +75,6 @@ const onSubmit = () => {
     loading.value = true
 
     try {
-
       if (form.value.remember) {
         cache.local.set(lastLoginCacheKey, form.value.username)
       } else {
@@ -91,14 +90,14 @@ const onSubmit = () => {
         type: 'success',
       })
 
-      // 跳转路由前移除turnstile组件
       removeTurnstile()
 
-      router.push('/').catch(() => { })
+      const redirect = route.query.redirect || '/'
+      router.replace(redirect)
     } catch (err) {
       console.error('登录失败', err)
       btnDisabled.value = true
-      turnstile.reset(cfTurnstileWidgetId.value);
+      turnstile.reset(cfTurnstileWidgetId.value)
     } finally {
       loading.value = false
     }
@@ -106,11 +105,9 @@ const onSubmit = () => {
 }
 
 onMounted(() => {
-  // 渲染cf-turnstile
   loadTurnstile()
 })
 
-// 载入cloudflare turnstile 脚本
 function loadTurnstile() {
   const script = document.createElement('script')
   script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
@@ -122,9 +119,9 @@ function loadTurnstile() {
   script.onload = () => {
     cfTurnstileWidgetId.value = turnstile.render('#cf-turnstile', {
       sitekey: import.meta.env.VITE_APP_TURNSTILE_SITE_KEY,
-      "retry-interval": 30000,
+      'retry-interval': 30000,
       callback: turnstileCallback,
-      "expired-callback": turnstileExpiredCallback,
+      'expired-callback': turnstileExpiredCallback,
       size: 'flexible'
     })
   }

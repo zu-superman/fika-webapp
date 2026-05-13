@@ -21,10 +21,19 @@ export const userAuthStore = defineStore('auth', {
       }
     },
     async logoutAction() {
-      await logout()
+      try {
+        await logout()
+      } catch (e) {
+        // ignore logout API errors
+      }
       this.isAuthenticated = false
       this.user = null
       removeToken()
+
+      const { usePermissionStore } = await import('@/layout/stores/permission')
+      const { useTagsViewStore } = await import('@/layout/stores/tags-view')
+      usePermissionStore().reset()
+      useTagsViewStore().$reset()
     },
   },
 })
