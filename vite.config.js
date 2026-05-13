@@ -4,11 +4,12 @@ import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
+import { createMockMiddleware } from './mock/index.mjs'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) =>{
   const env = loadEnv(mode, process.cwd(), '')
-  
+
   return {
     server: {
       port: env.VITE_PORT || 8000,
@@ -26,6 +27,11 @@ export default defineConfig(({ mode }) =>{
       Components({
         resolvers: [ElementPlusResolver()],
       }),
-    ],
+      // Mock middleware (dev only) — redirects API requests to the same dev server
+      mode === 'development' ? {
+        name: 'mock',
+        configureServer: createMockMiddleware,
+      } : undefined,
+    ].filter(Boolean),
   }
 })
