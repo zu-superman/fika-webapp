@@ -26,7 +26,8 @@
         </el-input>
       </el-form-item>
       <el-form-item prop="code" v-if="captchaEnabled">
-        <el-input
+        <div id="cf-turnstile"></div>
+        <!-- <el-input
           v-model="loginForm.code"
           size="large"
           auto-complete="off"
@@ -38,12 +39,13 @@
         </el-input>
         <div class="login-code">
           <img :src="codeUrl" @click="getCode" class="login-code-img"/>
-        </div>
+        </div> -->
       </el-form-item>
       <el-checkbox v-model="loginForm.rememberMe" style="margin:0px 0px 25px 0px;">记住密码</el-checkbox>
       <el-form-item style="width:100%;">
         <el-button
           :loading="loading"
+          :disabled="loginDisable"
           size="large"
           type="primary"
           style="width:100%;"
@@ -79,12 +81,16 @@ const router = useRouter()
 const { proxy } = getCurrentInstance()
 
 const loginForm = ref({
-  username: "admin",
-  password: "admin123",
+  username: "",
+  password: "",
   rememberMe: false,
   code: "",
   uuid: ""
 })
+
+// turnstile 组件id
+const turnstileSiteKey = import.meta.env.VITE_APP_TURNSTILE_SITE_KEY
+const turnstileWidgetId = ref()
 
 const loginRules = {
   username: [{ required: true, trigger: "blur", message: "请输入您的账号" }],
@@ -93,6 +99,7 @@ const loginRules = {
 }
 
 const codeUrl = ref("")
+const loginDisable = ref(false)
 const loading = ref(false)
 // 验证码开关
 const captchaEnabled = ref(true)
@@ -107,6 +114,7 @@ watch(route, (newRoute) => {
 function handleLogin() {
   proxy.$refs.loginRef.validate(valid => {
     if (valid) {
+      loginDisable.value = true
       loading.value = true
       // 勾选了需要记住密码设置在 cookie 中设置记住用户名和密码
       if (loginForm.value.rememberMe) {
@@ -128,27 +136,62 @@ function handleLogin() {
           }
           return acc
         }, {})
+        removeTurnstile();
         router.push({ path: redirect.value || "/", query: otherQueryParams })
       }).catch(() => {
         loading.value = false
+        loginDisable.value = false
         // 重新获取验证码
         if (captchaEnabled.value) {
-          getCode()
+          removeTurnstile();
+          loadTurnstile();
         }
       })
     }
   })
 }
 
-function getCode() {
-  getCodeImg().then(res => {
-    captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
-    if (captchaEnabled.value) {
-      codeUrl.value = "data:image/gif;base64," + res.img
-      loginForm.value.uuid = res.uuid
-    }
-  })
+// function getCode() {
+//   getCodeImg().then(res => {
+//     captchaEnabled.value = res.captchaEnabled === undefined ? true : res.captchaEnabled
+//     if (captchaEnabled.value) {
+//       codeUrl.value = "data:image/gif;base64," + res.img
+//       loginForm.value.uuid = res.uuid
+//     }
+//   })
+// }
+
+// 载入cloudflare turnstile 脚本
+function loadTurnstile() {
+  const script = document.createElement('script')
+  script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+  script.async = true
+  script.defer = true
+
+  document.head.appendChild(script)
+
+  script.onload = () => {
+    turnstileWidgetId.value = turnstile.render('#cf-turnstile', {
+      sitekey: turnstileSiteKey,
+      "retry-interval": 30000,
+      callback: (token) => {
+        loginDisable.value = false
+        loginForm.value.code = token
+      },
+      "expired-callback": () => {
+        loginDisable.value = true
+        loginForm.value.code = ""
+      },
+      size: 'flexible'
+    })
+  }
+  loginDisable.value = true
 }
+
+function removeTurnstile() {
+  turnstile.remove(turnstileWidgetId.value)
+}
+
 
 function getCookie() {
   const username = Cookies.get("username")
@@ -161,7 +204,8 @@ function getCookie() {
   }
 }
 
-getCode()
+// getCode()
+loadTurnstile()
 getCookie()
 </script>
 
